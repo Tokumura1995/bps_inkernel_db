@@ -1,0 +1,11 @@
+bpf_xmit :	bpf_xmit.c libbpf.o
+	gcc -Wall -o bpf_xmit bpf_xmit.c libbpf.c
+
+bpf_xmit.o :	bpf_xmit.c
+	gcc -c bpf_xmit.c
+
+libbpf.o :	libbpf.c
+	gcc -c libbpf.c
+
+clean :
+	rm -f bpf_xmit bpf_xmit.o libbpf.o
