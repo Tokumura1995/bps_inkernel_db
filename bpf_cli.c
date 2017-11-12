@@ -11,6 +11,8 @@
 #define GET 1
 #define DEL 2
 #define STR 3
+#define RET 4
+#define NOELEM 5
 
 int main(int argc, char ** argv)
 {
@@ -31,42 +33,40 @@ int main(int argc, char ** argv)
     return -1;
   }
 
-  char ser_addr[32];
-  printf("IP addr::");
-  scanf("%s", ser_addr);
-
   addr.sin_family = AF_INET;
   addr.sin_port = htons(22222);
-  addr.sin_addr.s_addr = inet_addr(ser_addr);
+  addr.sin_addr.s_addr = inet_addr(argv[1]);
 
   while (1) {
     char  p_type[8];
-
+    int s_key;
+    int s_value;
+    
     printf(">>>");
     scanf("%s", p_type);
 
     if (strcmp(p_type, "put") == 0 || strcmp(p_type, "PUT") == 0) {
       pkt.type = PUT;
       printf("key>>");
-      scanf("%d", &pkt.key);
+      scanf("%d", &s_key);
       printf("value>>");
-      scanf("%d", &pkt.value);
+      scanf("%d", &s_value);
+      pkt.key = htonl(s_key);
+      pkt.value = htonl(s_value);
     } else if (strcmp(p_type, "get") == 0 || strcmp(p_type, "GET") == 0) {
       pkt.type = GET;
       printf("key>>");
-      scanf("%d", &pkt.key);
+      scanf("%d", &s_key);
+      pkt.key = htonl(s_key);
       pkt.value = 0;
     } else if (strcmp(p_type, "del") == 0 || strcmp(p_type, "DEL") == 0) {
       pkt.type = DEL;
       printf("key>>");
-      scanf("%d", &pkt.key);
+      scanf("%d", &s_key);
+      pkt.key = htonl(s_key);
       pkt.value = 0;
     } else if (strcmp(p_type, "exit") == 0) {
       break;
-    } else if (strcmp(p_type, "start") == 0) {
-      pkt.type = STR;
-      printf("start\n");
-      pkt.value = 0;
     }  else {
       printf("no such key\n");
       continue;
@@ -82,10 +82,12 @@ int main(int argc, char ** argv)
 	perror("recv");
 	return -1;
       }
-
-      printf("value = %d\n", recv_pkt.value);
+      if (pkt.type == NOELEM) {
+	printf("no elem\n");
+      } else {
+	printf("value = %d\n", recv_pkt.value);
+      }
     }
-    
     if (strcmp("exit", p_type) == 0) {
       break;
     }
